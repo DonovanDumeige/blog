@@ -1,7 +1,8 @@
+/* eslint-disable prettier/prettier */
 import { Entity, Column, PrimaryColumn } from 'typeorm';
 
 @Entity()
-export class User {
+export class users {
   @PrimaryColumn()
   id: number;
 
