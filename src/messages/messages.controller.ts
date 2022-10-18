@@ -10,11 +10,13 @@ export class MessagesController {
   @Post()
   // Récupère la fonction créer dans messageService, avec comme données le format (dto) donné.
   create(@Body() createMessageDto: CreateMessageDto) {
+    console.log(createMessageDto);
     return this.messageService.create(createMessageDto);
   }
   @Get()
-  findAll() { //: Promise<Mess[]> // --> Je ne comprends pas pourquoi cela retourne une erreur pour l'instant.
-    return this.messageService.findAll();
+  findAll() {
+    //: Promise<Mess[]> // --> Je ne comprends pas pourquoi cela retourne une erreur pour l'instant.
+    return this.messageService.getAllMessages();
   }
 
   @Get(':id')

@@ -1,18 +1,31 @@
 import { Injectable } from '@nestjs/common';
-import { Mess } from './interfaces/messages.interface';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { CreateMessageDto } from './dto/create-message.dto';
+import { message } from './entities/message.entity';
 
 @Injectable()
 export class MessagesService {
-  // crée un élément privé en lecture seule.
-  private readonly messages: Mess[] = [];
+  constructor(
+    @InjectRepository(message)
+    private messRepository: Repository<message>,
+  ) {}
 
-  // Ajoute une valeur au tableau en lecture seule.
-  create(mess: Mess) {
-    this.messages.push(mess);
+  // Pour retourner un tableau
+  getAllMessages(): Promise<message[]> {
+    return this.messRepository.find();
   }
 
-  // fonction qui retourne ici mon tableau avec les valeurs ajoutées.
-  findAll(): Mess[] {
-    return this.messages;
+  // Pour retourner une valeur seule.
+  getMessageByID(id: number): Promise<message> {
+    return this.messRepository.findOneBy({ id });
+  }
+
+  async remove(id: string): Promise<void> {
+    await this.messRepository.delete(id);
+  }
+
+  create(createMessageDto: CreateMessageDto) {
+    return this.messRepository.create(createMessageDto);
   }
 }
