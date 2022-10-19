@@ -13,7 +13,7 @@ export class MessagesController {
     console.log(createMessageDto);
     return this.messageService.createMessage(createMessageDto);
   }
-  @Get()  
+  @Get()
   findAll() {
     //: Promise<Mess[]> // --> Je ne comprends pas pourquoi cela retourne une erreur pour l'instant.
     return this.messageService.getAllMessages();
