@@ -12,26 +12,19 @@ export class MessagesService {
     private messRepository: Repository<message>,
   ) {}
 
-  // Pour retourner un tableau
-  getAllMessages(): Promise<message[]> {
+  getAllMessages() {
     return this.messRepository.find();
   }
 
-  // Pour retourner une valeur seule.
-  getMessageByID(id: number): Promise<message> {
+  getMessageByID(id: number) {
     return this.messRepository.findOneBy({ id });
   }
 
-  // Crée le message
-  createMessage(createMessageDto: CreateMessageDto): message {
+  createMessage(createMessageDto: CreateMessageDto) {
     return this.messRepository.create(createMessageDto);
   }
 
-  // Met à jour le message. Attend en argument l'id et ce qu'il doit modifier.
-  updateMessageByID(
-    id: number,
-    upData: UpdateMessageDto,
-  ): Promise<UpdateResult> {
+  updateMessageByID(id: number, upData: UpdateMessageDto) {
     return this.messRepository.update(id, upData);
   }
 
