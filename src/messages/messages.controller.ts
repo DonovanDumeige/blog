@@ -1,5 +1,15 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Patch,
+  Delete,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { CreateMessageDto } from './dto/create-message.dto';
+import { UpdateMessageDto } from './dto/update-message.dto';
 import { MessagesService } from './messages.service';
 // import { Mess } from './interfaces/messages.interface';
 
@@ -11,17 +21,28 @@ export class MessagesController {
   // Récupère la fonction créer dans messageService, avec comme données le format (dto) donné.
   create(@Body() createMessageDto: CreateMessageDto) {
     console.log(createMessageDto);
-    return this.messageService.create(createMessageDto);
+    return this.messageService.createMessage(createMessageDto);
   }
   @Get()
   findAll() {
-    //: Promise<Mess[]> // --> Je ne comprends pas pourquoi cela retourne une erreur pour l'instant.
     return this.messageService.getAllMessages();
   }
 
   @Get(':id')
-  findOne(@Param() params): string {
-    console.log(params.id);
-    return `This actions return a #{params.id} message`;
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.messageService.getMessageByID(id);
+  }
+
+  @Patch(':id')
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() Data: UpdateMessageDto,
+  ) {
+    return this.messageService.updateMessageByID(+id, Data);
+  }
+
+  @Delete(':id')
+  delete(@Param('id', ParseIntPipe) id: number) {
+    return this.messageService.deleteMessageByID(id);
   }
 }
