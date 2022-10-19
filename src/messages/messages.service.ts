@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, UpdateResult } from 'typeorm';
 import { CreateMessageDto } from './dto/create-message.dto';
+import { UpdateMessageDto } from './dto/update-message.dto';
 import { message } from './entities/message.entity';
 
 @Injectable()
@@ -21,11 +22,20 @@ export class MessagesService {
     return this.messRepository.findOneBy({ id });
   }
 
-  async remove(id: string): Promise<void> {
-    await this.messRepository.delete(id);
+  // Crée le message
+  createMessage(createMessageDto: CreateMessageDto): message {
+    return this.messRepository.create(createMessageDto);
   }
 
-  create(createMessageDto: CreateMessageDto) {
-    return this.messRepository.create(createMessageDto);
+  // Met à jour le message. Attend en argument l'id et ce qu'il doit modifier.
+  updateMessageByID(
+    id: number,
+    upData: UpdateMessageDto,
+  ): Promise<UpdateResult> {
+    return this.messRepository.update(id, upData);
+  }
+
+  deleteMessageByID(id: number) {
+    this.messRepository.delete(id);
   }
 }
