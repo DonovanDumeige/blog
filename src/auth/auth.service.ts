@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entities';
 import { Repository, TypeORMError } from 'typeorm';
-import { AuthDTO, CreateUserDTO } from './dto';
+import { CreateUserDTO } from './dto';
 import * as argon from 'argon2';
 @Injectable()
 export class AuthService {
