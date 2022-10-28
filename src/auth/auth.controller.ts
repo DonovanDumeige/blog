@@ -24,6 +24,6 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('connexion')
   connexion(@Request() req) {
-    return req.user;
+    return this.authService.signToken(req.user);
   }
 }

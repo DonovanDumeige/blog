@@ -4,11 +4,15 @@ import { User } from '../entities';
 import { Repository, TypeORMError } from 'typeorm';
 import { CreateUserDTO } from './dto';
 import * as argon from 'argon2';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User)
     private db: Repository<User>,
+    private jwt: JwtService,
+    private config: ConfigService,
   ) {}
   async inscription(dto: CreateUserDTO) {
     const user = new User();
@@ -65,5 +69,21 @@ export class AuthService {
       const { password, ...result } = user;
       return result;
     }
+  }
+
+  async signToken(user: any) {
+    const payload = {
+      username: user.username,
+      sub: user.id,
+      email: user.email,
+    };
+    const secret = this.config.get('JWT_SECRET');
+    const token = await this.jwt.signAsync(payload, {
+      expiresIn: '1h',
+      secret: secret,
+    });
+    return {
+      acces_token: token,
+    };
   }
 }
