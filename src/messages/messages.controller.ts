@@ -20,8 +20,8 @@ export class MessagesController {
   constructor(private MessageService: MessagesService) {}
 
   @Get()
-  getAllmessages(@GetUser('id') userID: number) {
-    return this.MessageService.getAllmessages(userID);
+  async getAllmessages(@GetUser('id') userID: number) {
+    return await this.MessageService.getAllmessages(userID);
   }
 
   @Get(':id')
@@ -34,7 +34,6 @@ export class MessagesController {
 
   @Post()
   createMessage(@GetUser('id') userID: number, @Body() dto: CreateMessageDTO) {
-    console.log(dto);
     return this.MessageService.createMessage(userID, dto);
   }
 
