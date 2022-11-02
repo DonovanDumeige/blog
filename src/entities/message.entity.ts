@@ -1,7 +1,9 @@
+import { IsOptional } from 'class-validator';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -17,7 +19,7 @@ export class Message {
   content: string;
 
   @Column()
-  author?: string;
+  author: string;
 
   @CreateDateColumn()
   createdAt: string;
@@ -27,4 +29,5 @@ export class Message {
 
   @ManyToOne(() => User, (user) => user.messages)
   user: User;
+  username: string;
 }
