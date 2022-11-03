@@ -17,23 +17,21 @@ export class AuthService {
   async inscription(dto: CreateUserDTO) {
     const user = new User();
     const email = await this.db.findOneBy({ email: dto.email });
-    if (dto.password !== dto.passBis) {
-      throw new HttpException(
-        {
-          statut: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: 'Veuillez saisir le même mot de passe',
+    let passError, emailError;
+    if (dto.password !== dto.passBis)
+      passError = 'Veuillez saisir le même mot de passe.';
+
+    if (email) emailError = 'Email déjà utilisé';
+
+    if (emailError || passError) {
+      const errors = {
+        status: HttpStatus.PRECONDITION_FAILED,
+        message: {
+          emailError: emailError,
+          passError: passError,
         },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-    if (email) {
-      throw new HttpException(
-        {
-          status: HttpStatus.FORBIDDEN,
-          message: 'Email déjà utilisé',
-        },
-        HttpStatus.FORBIDDEN,
-      );
+      };
+      return errors;
     }
 
     const hash = await argon.hash(dto.password);
@@ -42,10 +40,16 @@ export class AuthService {
     user.username = dto.username;
     user.password = hash;
 
-    return this.db.save(user);
+    this.db.save(user);
+    return {
+      status: 201,
+      data: { email: user.email, username: user.username },
+    };
   }
   async connexion(username: string, pass: string) {
     const user = await this.db.findOneBy({ username: username });
+
+    //TODO : add errors variables.
     if (!user) {
       throw new HttpException(
         {
