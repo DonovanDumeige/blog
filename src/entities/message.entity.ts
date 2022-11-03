@@ -27,7 +27,9 @@ export class Message {
   @UpdateDateColumn()
   editedAt: string;
 
+  @Column()
+  userId: number;
+
   @ManyToOne(() => User, (user) => user.messages)
   user: User;
-  username: string;
 }

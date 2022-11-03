@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards';
 import { GetUser } from 'src/decorators';
+import { EditMessageDTO } from './dto';
 import { CreateMessageDTO } from './dto/create-message.dto';
 import { MessagesService } from './messages.service';
 
@@ -29,7 +30,8 @@ export class MessagesController {
     @GetUser('id') userID: number,
     @Param('id', ParseIntPipe) messageID: number,
   ) {
-    // return this.MessageService.getMessageByID();
+    console.log(messageID, userID);
+    return this.MessageService.getMessageByID(messageID, userID);
   }
 
   @Post()
@@ -41,8 +43,9 @@ export class MessagesController {
   editMessageByID(
     @GetUser('id') userID: number,
     @Param('id', ParseIntPipe) messageID: number,
+    @Body() dto: EditMessageDTO,
   ) {
-    // return this.MessageService.editMessageByID();
+    return this.MessageService.editMessageByID(userID, messageID, dto);
   }
 
   @Delete(':id')
@@ -50,6 +53,6 @@ export class MessagesController {
     @GetUser('id') userID: number,
     @Param('id', ParseIntPipe) messageID: number,
   ) {
-    // return this.MessageService.deleteMessageByID();
+    return this.MessageService.deleteMessageByID(userID, messageID);
   }
 }
