@@ -1,41 +1,76 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, UpdateResult } from 'typeorm';
-import { CreateMessageDto } from './dto/create-message.dto';
-import { UpdateMessageDto } from './dto/update-message.dto';
-import { message } from './entities/message.entity';
+import { Message, User } from 'src/entities';
+import { Repository } from 'typeorm';
+import { CreateMessageDTO, EditMessageDTO } from './dto';
 
 @Injectable()
 export class MessagesService {
   constructor(
-    @InjectRepository(message)
-    private messRepository: Repository<message>,
+    @InjectRepository(Message)
+    private messRepo: Repository<Message>,
+    @InjectRepository(User)
+    private userRepo: Repository<User>,
   ) {}
-
-  // Pour retourner un tableau
-  getAllMessages(): Promise<message[]> {
-    return this.messRepository.find();
+  async getAllmessages(userID: number) {
+    return this.messRepo.find({
+      where: {
+        userId: userID,
+      },
+    });
   }
 
-  // Pour retourner une valeur seule.
-  getMessageByID(id: number): Promise<message> {
-    return this.messRepository.findOneBy({ id });
+  async getMessageByID(messageID: number, userID: number) {
+    const message = await this.messRepo.findOneBy({
+      id: messageID,
+      userId: userID,
+    });
+    if (!message)
+      throw new HttpException(
+        { status: HttpStatus.NOT_FOUND, message: 'message not found' },
+        HttpStatus.NOT_FOUND,
+      );
+
+    if (message.userId != userID)
+      throw new HttpException(
+        { status: HttpStatus.UNAUTHORIZED, message: 'access unauthorized' },
+        HttpStatus.UNAUTHORIZED,
+      );
+    return message;
   }
 
-  // Crée le message
-  createMessage(createMessageDto: CreateMessageDto): message {
-    return this.messRepository.create(createMessageDto);
+  async createMessage(userID: number, dto: CreateMessageDTO) {
+    const user = await this.userRepo.findOneBy({ id: userID });
+    const message = this.messRepo.create({
+      author: user.username,
+      userId: userID,
+      ...dto,
+    });
+    return this.messRepo.save(message);
+  }
+  async editMessageByID(
+    userID: number,
+    messageID: number,
+    dto: EditMessageDTO,
+  ) {
+    const message = await this.messRepo.findOneBy({
+      id: messageID,
+      userId: userID,
+    });
+
+    //TODO: add tests to check if there is a message and if the user ID is recognized.
+    return this.messRepo.save({
+      ...message,
+      ...dto,
+    });
   }
 
-  // Met à jour le message. Attend en argument l'id et ce qu'il doit modifier.
-  updateMessageByID(
-    id: number,
-    upData: UpdateMessageDto,
-  ): Promise<UpdateResult> {
-    return this.messRepository.update(id, upData);
-  }
-
-  deleteMessageByID(id: number) {
-    this.messRepository.delete(id);
+  async deleteMessageByID(userID: number, messageID: number) {
+    const message = await this.messRepo.findOneBy({
+      id: messageID,
+      userId: userID,
+    });
+    this.messRepo.remove(message);
+    return `Message n°${messageID} deleted.`;
   }
 }

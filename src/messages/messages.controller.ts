@@ -1,27 +1,58 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
-import { CreateMessageDto } from './dto/create-message.dto';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  ParseIntPipe,
+  Body,
+  UseGuards,
+} from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/guards';
+import { GetUser } from 'src/decorators';
+import { EditMessageDTO } from './dto';
+import { CreateMessageDTO } from './dto/create-message.dto';
 import { MessagesService } from './messages.service';
-// import { Mess } from './interfaces/messages.interface';
 
+@UseGuards(JwtAuthGuard)
 @Controller('messages')
 export class MessagesController {
-  constructor(private messageService: MessagesService) {}
+  constructor(private MessageService: MessagesService) {}
 
-  @Post()
-  // Récupère la fonction créer dans messageService, avec comme données le format (dto) donné.
-  create(@Body() createMessageDto: CreateMessageDto) {
-    console.log(createMessageDto);
-    return this.messageService.create(createMessageDto);
-  }
   @Get()
-  findAll() {
-    //: Promise<Mess[]> // --> Je ne comprends pas pourquoi cela retourne une erreur pour l'instant.
-    return this.messageService.getAllMessages();
+  async getAllmessages(@GetUser('id') userID: number) {
+    return await this.MessageService.getAllmessages(userID);
   }
 
   @Get(':id')
-  findOne(@Param() params): string {
-    console.log(params.id);
-    return `This actions return a #{params.id} message`;
+  getMessageByID(
+    @GetUser('id') userID: number,
+    @Param('id', ParseIntPipe) messageID: number,
+  ) {
+    console.log(messageID, userID);
+    return this.MessageService.getMessageByID(messageID, userID);
+  }
+
+  @Post()
+  createMessage(@GetUser('id') userID: number, @Body() dto: CreateMessageDTO) {
+    return this.MessageService.createMessage(userID, dto);
+  }
+
+  @Patch(':id')
+  editMessageByID(
+    @GetUser('id') userID: number,
+    @Param('id', ParseIntPipe) messageID: number,
+    @Body() dto: EditMessageDTO,
+  ) {
+    return this.MessageService.editMessageByID(userID, messageID, dto);
+  }
+
+  @Delete(':id')
+  deleteMessageByID(
+    @GetUser('id') userID: number,
+    @Param('id', ParseIntPipe) messageID: number,
+  ) {
+    return this.MessageService.deleteMessageByID(userID, messageID);
   }
 }
