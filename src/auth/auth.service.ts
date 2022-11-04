@@ -15,13 +15,14 @@ export class AuthService {
     private config: ConfigService,
   ) {}
   async inscription(dto: CreateUserDTO) {
-    const user = new User();
     const email = await this.db.findOneBy({ email: dto.email });
     let passError, emailError;
     if (dto.password !== dto.passBis)
-      passError = 'Veuillez saisir le même mot de passe.';
+      passError = 'Please enter the same password.';
 
-    if (email) emailError = 'Email déjà utilisé';
+    const hash = await argon.hash(dto.password);
+
+    if (email) emailError = 'Email already use.';
 
     if (emailError || passError) {
       const errors = {
@@ -34,12 +35,7 @@ export class AuthService {
       return errors;
     }
 
-    const hash = await argon.hash(dto.password);
-
-    user.email = dto.email;
-    user.username = dto.username;
-    user.password = hash;
-
+    const user = this.db.create({ password: hash, ...dto });
     this.db.save(user);
     return {
       status: 201,
@@ -48,9 +44,10 @@ export class AuthService {
   }
   async connexion(username: string, pass: string) {
     const user = await this.db.findOneBy({ username: username });
-
+    let userError, passError;
     //TODO : add errors variables.
     if (!user) {
+      userError = 'ID not recognized';
       throw new HttpException(
         {
           status: HttpStatus.FORBIDDEN,
@@ -62,17 +59,22 @@ export class AuthService {
 
     const isMatches = await argon.verify(user.password, pass);
     if (!isMatches) {
-      throw new HttpException(
-        {
-          status: HttpStatus.FORBIDDEN,
-          message: 'Mot de passe incorrect.',
-        },
-        HttpStatus.FORBIDDEN,
-      );
-    } else {
-      const { password, ...result } = user;
-      return result;
+      passError = 'Invalid password.';
     }
+
+    if (userError || passError) {
+      const errors = {
+        status: HttpStatus.PRECONDITION_FAILED,
+        message: {
+          user: userError,
+          password: passError,
+        },
+      };
+      return errors;
+    }
+
+    const { password, ...result } = user;
+    return result;
   }
 
   async signToken(user: any) {
