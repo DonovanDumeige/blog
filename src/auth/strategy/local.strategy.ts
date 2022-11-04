@@ -10,6 +10,10 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     super();
   }
 
+  /* method for approve the connection of the user. It includes user's information.
+  If this information is recognized, the connection is authorized. 
+  Otherwise, access is denied.
+   */
   async validate(username: string, password: string): Promise<any> {
     const user = await this.authService.connexion(username, password);
     if (!user) {

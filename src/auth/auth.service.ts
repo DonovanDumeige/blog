@@ -14,6 +14,13 @@ export class AuthService {
     private jwt: JwtService,
     private config: ConfigService,
   ) {}
+
+  /* Method for registrer an user.
+  Create an user with his data (email, username, password) 
+  only if the email is not found on the database.
+
+  If the password is correct, it is encrypted for better security.
+  If there is no error, the data is send to the database. */
   async inscription(dto: CreateUserDTO) {
     const email = await this.db.findOneBy({ email: dto.email });
     let passError, emailError;
@@ -42,6 +49,12 @@ export class AuthService {
       data: { email: user.email, username: user.username },
     };
   }
+
+  /* 
+  Method to connect an user.
+  Verify if the username, and the password are found on the database.
+  Otherwise, connection is denied.
+  */
   async connexion(username: string, pass: string) {
     const user = await this.db.findOneBy({ username: username });
     let userError, passError;
@@ -77,6 +90,8 @@ export class AuthService {
     return result;
   }
 
+  /* Method to create a JWT token. The payload includes the user's information. It is
+  the used to create the token. */
   async signToken(user: any) {
     const payload = {
       username: user.username,
