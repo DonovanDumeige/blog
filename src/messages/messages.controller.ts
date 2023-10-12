@@ -20,24 +20,22 @@ export class MessagesController {
   constructor(private MessageService: MessagesService) {}
 
   @Get()
-  async getAllmessages(@GetUser('id') userID: number) {
-    return await this.MessageService.getAllmessages(userID);
+  async getAllmessages() {
+    return await this.MessageService.getAllmessages();
   }
 
   @Get(':id')
-  getMessageByID(
-    @GetUser('id') userID: number,
-    @Param('id', ParseIntPipe) messageID: number,
-  ) {
-    console.log(messageID, userID);
-    return this.MessageService.getMessageByID(messageID, userID);
+  getMessageByID(@Param('id', ParseIntPipe) messageID: number) {
+    return this.MessageService.getMessageByID(messageID);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post()
   createMessage(@GetUser('id') userID: number, @Body() dto: CreateMessageDTO) {
     return this.MessageService.createMessage(userID, dto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   editMessageByID(
     @GetUser('id') userID: number,
@@ -47,6 +45,7 @@ export class MessagesController {
     return this.MessageService.editMessageByID(userID, messageID, dto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   deleteMessageByID(
     @GetUser('id') userID: number,

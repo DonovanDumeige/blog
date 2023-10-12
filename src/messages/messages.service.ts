@@ -12,29 +12,18 @@ export class MessagesService {
     @InjectRepository(User)
     private userRepo: Repository<User>,
   ) {}
-  async getAllmessages(userID: number) {
-    return this.messRepo.find({
-      where: {
-        userId: userID,
-      },
-    });
+  async getAllmessages() {
+    return this.messRepo.find();
   }
 
-  async getMessageByID(messageID: number, userID: number) {
+  async getMessageByID(messageID: number) {
     const message = await this.messRepo.findOneBy({
       id: messageID,
-      userId: userID,
     });
     if (!message)
       throw new HttpException(
         { status: HttpStatus.NOT_FOUND, message: 'message not found' },
         HttpStatus.NOT_FOUND,
-      );
-
-    if (message.userId != userID)
-      throw new HttpException(
-        { status: HttpStatus.UNAUTHORIZED, message: 'access unauthorized' },
-        HttpStatus.UNAUTHORIZED,
       );
     return message;
   }
@@ -53,12 +42,23 @@ export class MessagesService {
     messageID: number,
     dto: EditMessageDTO,
   ) {
-    const message = await this.messRepo.findOneBy({
-      id: messageID,
-      userId: userID,
+    let messError;
+
+    const message = await this.messRepo.findOne({
+      where: {
+        id: messageID,
+        userId: userID,
+      },
     });
 
-    //TODO: add tests to check if there is a message and if the user ID is recognized.
+    if (!message || message === null) {
+      messError = {
+        status: HttpStatus.NOT_FOUND,
+        message: 'Message not found or null',
+      };
+      return messError;
+    }
+
     return this.messRepo.save({
       ...message,
       ...dto,
